@@ -8,14 +8,26 @@
 
 import React, {Component} from 'react';
 import { StyleSheet, Text, View} from 'react-native';
+import PropTypes from 'prop-types';
 
 type Props = {};
 export default class Game extends Component<Props> {
-  target = 10 + Math.floor(40 * Math.random());
+  static propTypes = {
+    randomNumberCount: PropTypes.number.isRequired,
+  };
+  randomNumbers = Array
+    .from({ length: this.props.randomNumberCount })
+    .map(() => 1 + Math.floor(10 * Math.random()));
+  target = this.randomNumbers
+    .slice(0, this.props.randomNumberCount - 2)
+    .reduce((acc, curr) => acc + curr, 0); //this is easiest way to sum array. Starting from zero is a fail safe in case the array is empty
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.target}>{this.target}</Text>
+        {this.randomNumbers.map((randomNumber, index) => 
+          <Text key={index}>{randomNumber}</Text>
+          )}
       </View>
     );
   }
@@ -24,15 +36,14 @@ export default class Game extends Component<Props> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: 'blue',
     paddingTop: 30,
+    justifyContent: 'center',
   },
   target: {
     fontSize: 40,
     backgroundColor: '#aaa',
     textAlign: 'center',
-    marginHorizontal: 50,
+    marginHorizontal: 25,
   },
 });
