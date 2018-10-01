@@ -5,11 +5,13 @@ import PropTypes from 'prop-types';
 
 export default class RandomNumber extends Component {
   static propTypes = {
+    id: PropTypes.number.isRequired,
   	number: PropTypes.number.isRequired,
     isSelected: PropTypes.bool.isRequired,
+    onPress: PropTypes.func.isRequired,
   };
   handlePress = () => {
-    console.log(this.props.number);  
+    this.props.onPress(this.props.id);  
   }
   render() {
     return (
