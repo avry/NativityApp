@@ -11,6 +11,7 @@ export default class RandomNumber extends Component {
     onPress: PropTypes.func.isRequired,
   };
   handlePress = () => {
+    if (this.props.isSelected) { return; }
     this.props.onPress(this.props.id);  
   }
   render() {
