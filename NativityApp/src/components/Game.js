@@ -16,9 +16,11 @@ type Props = {};
 export default class Game extends Component {
   static propTypes = {
     randomNumberCount: PropTypes.number.isRequired,
+    initialSeconds: PropsTypes.number.isRequired,
   };
   state = {
     selectedIds: [],
+    remainingSeconds: this.props.initialSeconds,
   };
   //our psuedo-randomly generated numbers array
   randomNumbers = Array
@@ -46,6 +48,9 @@ export default class Game extends Component {
     const sumSelected = this.state.selectedIds.reduce((acc, curr) => {
       return acc + this.randomNumbers[curr];
     }, 0);
+    if (this.state.remainingSeconds === 0) {
+      return 'LOST';
+    }
     if (sumSelected < this.target) {
       return 'PLAYING';
     }
@@ -56,6 +61,23 @@ export default class Game extends Component {
       return 'LOST';
     } 
     console.warn(sumSelected);
+  }
+  componentDidMount() {
+    //TODO: understand fully setInterval and explore other common use-cases
+    this.intervalId = setInterval(
+      () => {
+        this.setState((prevState) => {
+          return { remainingSeconds: prevState.remainingSeconds - 1 };
+        }, 
+        () => {
+          if (this.state.remainingSeconds === 0) {
+            clearInterval(this.intervalId);
+          }
+        });
+      }, 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this.intervalId);
   }
   render() {
     const gameStatus = this.gameStatus();
@@ -77,6 +99,7 @@ export default class Game extends Component {
             />
           )}
         </View>
+        <Text>{ this.state.remainingSeconds }</Text>
         <Text>{gameStatus}</Text>
       </View>
     );
@@ -108,6 +131,7 @@ const styles = StyleSheet.create({
     marginVertical: 25,
     textAlign: 'center',
   },
+  //These are dynamic styles rules
   STATUS_PLAYING: {
     backgroundColor: '#bbb',
   },
