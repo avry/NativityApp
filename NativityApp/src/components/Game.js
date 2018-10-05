@@ -16,7 +16,7 @@ type Props = {};
 export default class Game extends Component {
   static propTypes = {
     randomNumberCount: PropTypes.number.isRequired,
-    initialSeconds: PropsTypes.number.isRequired,
+    initialSeconds: PropTypes.number.isRequired,
   };
   state = {
     selectedIds: [],
