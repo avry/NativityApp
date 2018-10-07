@@ -9,8 +9,10 @@
 import React, {Component} from 'react';
 import { StyleSheet, Text, View} from 'react-native';
 import PropTypes from 'prop-types';
+import shuffle from 'lodash.shuffle';
 
 import RandomNumber from './RandomNumber';
+
 
 type Props = {};
 export default class Game extends Component {
@@ -22,6 +24,7 @@ export default class Game extends Component {
     selectedIds: [],
     remainingSeconds: this.props.initialSeconds,
   };
+  gameStatus = 'PLAYING';
   //our psuedo-randomly generated numbers array
   randomNumbers = Array
     .from({ length: this.props.randomNumberCount })
@@ -30,7 +33,7 @@ export default class Game extends Component {
   target = this.randomNumbers
     .slice(0, this.props.randomNumberCount - 2)
     .reduce((acc, curr) => acc + curr, 0); //this is easiest way to sum array. Starting from zero is a fail safe in case the array is empty
-  
+  shuffledRandomNumbers = shuffle(this.randomNumbers); 
   isNumberSelected = (numberIndex) => {
     return this.state.selectedIds.indexOf(numberIndex) >= 0;
   }
@@ -44,11 +47,11 @@ export default class Game extends Component {
   //because it is computed from the selectedIds array which IS
   //stored in state
   //TODO: Learn reduce inside out and other common use-cases
-  gameStatus = () => {
-    const sumSelected = this.state.selectedIds.reduce((acc, curr) => {
-      return acc + this.randomNumbers[curr];
+  calcGameStatus = (nextState) => {
+    const sumSelected = nextState.selectedIds.reduce((acc, curr) => {
+      return acc + this.shuffledRandomNumbers[curr];
     }, 0);
-    if (this.state.remainingSeconds === 0) {
+    if (nextState.remainingSeconds ===0 ) {
       return 'LOST';
     }
     if (sumSelected < this.target) {
@@ -57,11 +60,10 @@ export default class Game extends Component {
     if (sumSelected === this.target) {
       return 'WON';
     }
-    else {
+    if (sumSelected > this.target) {
       return 'LOST';
-    } 
-    console.warn(sumSelected);
-  }
+    }
+  };
   componentDidMount() {
     //TODO: understand fully setInterval and explore other common use-cases
     this.intervalId = setInterval(
@@ -76,18 +78,31 @@ export default class Game extends Component {
         });
       }, 1000);
   }
+  componentWillUpdate(nextProps, nextState) {
+    if (
+      nextState.selectedIds !== this.state.selectedIds ||
+      nextState.remainingSeconds === 0
+    ) {
+      this.gameStatus = this.calcGameStatus(nextState);
+      if (this.gameStatus !== 'PLAYING') {
+        clearInterval(this.intervalId);
+      }
+    }
+  }
   componentWillUnmount() {
     clearInterval(this.intervalId);
   }
+
   render() {
-    const gameStatus = this.gameStatus();
+    const gameStatus = this.gameStatus
+    
     return (
       <View style={styles.container}>
         <Text style={[styles.target, styles[`STATUS_${gameStatus}`]]}>
           {this.target}
         </Text>
         <View style={styles.randomContainer}>
-          {this.randomNumbers.map((randomNumber, index) => 
+          {this.shuffledRandomNumbers.map((randomNumber, index) => 
             <RandomNumber 
               key={index} 
               id={index}
